@@ -87,9 +87,10 @@ func (s *Server) StreamExists(id string) bool {
 func (s *Server) Publish(id string, event []byte) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
-	if s.streams[id] != nil {
-		s.streams[id].event <- s.process(event)
+	if s.streams[id] == nil {
+		s.CreateStream(id)
 	}
+	s.streams[id].event <- s.process(event)
 }
 
 func (s *Server) getStream(id string) *Stream {
