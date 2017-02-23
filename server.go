@@ -85,11 +85,11 @@ func (s *Server) StreamExists(id string) bool {
 
 // Publish sends a mesage to every client in a streamID
 func (s *Server) Publish(id string, event []byte) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 	if s.streams[id] == nil {
 		s.CreateStream(id)
 	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	s.streams[id].event <- s.process(event)
 }
 
