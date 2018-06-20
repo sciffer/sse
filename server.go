@@ -45,17 +45,17 @@ func (s *Server) Close() {
 
 // CreateStream will create a new stream and register it
 func (s *Server) CreateStream(id string) *Stream {
+	// Search if stream already exists
+	if matchedStream, ok := s.streams[id]; ok {
+		return matchedStream
+	}
+	// Lock & create new stream
+	s.mu.Lock()
+	defer s.mu.Unlock()
 	str := newStream(s.BufferSize)
 	str.run()
 
 	// Register new stream
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	if s.streams[id] != nil {
-		return s.streams[id]
-	}
-
 	s.streams[id] = str
 
 	return str
@@ -74,13 +74,10 @@ func (s *Server) RemoveStream(id string) {
 
 // StreamExists checks whether a stream by a given id exists
 func (s *Server) StreamExists(id string) bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
 
-	if s.streams[id] != nil {
-		return true
-	}
-	return false
+	_, ok := s.streams[id]
+
+	return ok
 }
 
 // Publish sends a mesage to every client in a streamID
